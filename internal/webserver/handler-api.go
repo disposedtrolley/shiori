@@ -645,13 +645,25 @@ func (h *handler) apiUpdateAccount(w http.ResponseWriter, r *http.Request, ps ht
 	// Get existing account data from database
 	account, exist := h.DB.GetAccount(request.Username)
 	if !exist {
-		panic(fmt.Errorf("username doesn't exist"))
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		resp := map[string]interface{}{
+			"error": "user doesn't exist",
+		}
+		err = json.NewEncoder(w).Encode(&resp)
+		return
 	}
 
 	// Compare old password with database
 	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(request.OldPassword))
 	if err != nil {
-		panic(fmt.Errorf("old password doesn't match"))
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		resp := map[string]interface{}{
+			"error": "old password is incorrect",
+		}
+		err = json.NewEncoder(w).Encode(&resp)
+		return
 	}
 
 	// Save new password to database
