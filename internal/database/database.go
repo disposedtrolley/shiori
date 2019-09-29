@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/go-shiori/shiori/internal/model"
 )
@@ -34,6 +35,20 @@ type GetBookmarksOptions struct {
 type GetAccountsOptions struct {
 	Keyword string
 	Owner   bool
+}
+
+type NoRowsUpdatedError struct{}
+
+func (e NoRowsUpdatedError) Error() string {
+	return fmt.Sprintf("no rows updated in query")
+}
+
+func IsNoRowsUpdatedError(e interface{}) bool {
+	switch e.(type) {
+	case *NoRowsUpdatedError:
+		return true
+	}
+	return false
 }
 
 // DB is interface for accessing and manipulating data in database.

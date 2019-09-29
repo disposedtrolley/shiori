@@ -235,9 +235,13 @@ func (h *handler) apiRenameTag(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Update name
 	err = h.DB.RenameTag(tag.ID, tag.Name)
+	if database.IsNoRowsUpdatedError(err) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	checkError(err)
 
-	fmt.Fprint(w, 1)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // apiInsertBookmark is handler for POST /api/bookmark

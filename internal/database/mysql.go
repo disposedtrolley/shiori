@@ -614,8 +614,15 @@ func (db *MySQLDatabase) GetTags() ([]model.Tag, error) {
 
 // RenameTag change the name of a tag.
 func (db *MySQLDatabase) RenameTag(id int, newName string) error {
-	_, err := db.Exec(`UPDATE tag SET name = ? WHERE id = ?`, newName, id)
-	return err
+	res, err := db.Exec(`UPDATE tag SET name = ? WHERE id = ?`, newName, id)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return &NoRowsUpdatedError{}
+	}
+	return nil
 }
 
 // CreateNewID creates new ID for specified table

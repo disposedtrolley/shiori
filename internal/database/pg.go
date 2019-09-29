@@ -623,13 +623,20 @@ func (db *PGDatabase) GetTags() ([]model.Tag, error) {
 
 // RenameTag change the name of a tag.
 func (db *PGDatabase) RenameTag(id int, newName string) error {
-	_, err := db.Exec(`UPDATE tag SET name = $1 WHERE id = $2`, newName, id)
-	return err
+	res, err := db.Exec(`UPDATE tag SET name = $1 WHERE id = $2`, newName, id)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		return &NoRowsUpdatedError{}
+	}
+	return nil
 }
 
 // CreateNewID creates new ID for specified table
 func (db *PGDatabase) CreateNewID(table string) (int, error) {
- 	var tableID int
+	var tableID int
 	query := fmt.Sprintf(`SELECT last_value from %s_id_seq;`, table)
 
 	err := db.Get(&tableID, query)
